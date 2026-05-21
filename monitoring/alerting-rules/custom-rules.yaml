@@ -1,0 +1,47 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: devops-platform-rules
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: sample-app.rules
+      rules:
+
+        - alert: HighCPUUsage
+          expr: rate(container_cpu_usage_seconds_total{namespace="apps"}[5m]) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage on {{ $labels.pod }}"
+            description: "Pod {{ $labels.pod }} CPU > 80% for 5 minutes"
+
+        - alert: PodRestartingTooOften
+          expr: rate(kube_pod_container_status_restarts_total{namespace="apps"}[15m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.pod }} restarting frequently"
+            description: "Pod has restarted in the last 15 minutes"
+
+        - alert: HighMemoryUsage
+          expr: container_memory_usage_bytes{namespace="apps"} / container_spec_memory_limit_bytes{namespace="apps"} > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory on {{ $labels.pod }}"
+            description: "Pod memory > 85% of limit"
+
+        - alert: ServiceDown
+          expr: up{job="sample-app"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "sample-app is down"
+            description: "sample-app target has been down for > 1 minute"

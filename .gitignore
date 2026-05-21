@@ -1,0 +1,13 @@
+# Go binaries
+apps/sample-app/sample-app
+apps/sample-app/server
+
+# Terraform state
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/.terraform/
+
+# Raw secrets — NEVER commit
+**/raw-secret.yaml
+**/*raw*.yaml
+*.env
